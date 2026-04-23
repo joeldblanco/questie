@@ -14,13 +14,21 @@ export default function Chat() {
   const [thread, setThread] = useState<any>(null);
   const [chatIsLoading, setChatIsLoading] = useState<boolean>(false);
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
+  const openAiApiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
+  const assistantId = process.env.NEXT_PUBLIC_OPENAI_ASSISTANT_ID;
 
-  const openai = new OpenAI({
-    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY!,
-    dangerouslyAllowBrowser: true,
-  });
+  const openai = openAiApiKey
+    ? new OpenAI({
+        apiKey: openAiApiKey,
+        dangerouslyAllowBrowser: true,
+      })
+    : null;
 
   useEffect(() => {
+    if (!openai) {
+      return;
+    }
+
     const createThread = async () => {
       try {
         const newThread = await openai.beta.threads.create();
@@ -40,13 +48,17 @@ export default function Chat() {
       setChatIsLoading(true);
       createThread();
     }
-  }, [isChatOpen, openai.beta.threads, thread]);
+  }, [isChatOpen, openai, thread]);
 
   const handlePromptChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setPrompt(e.target.value);
   };
 
   const handleSubmit = async () => {
+    if (!openai || !assistantId || !thread) {
+      return;
+    }
+
     setLoading(true);
 
     const userMessage = {
@@ -65,7 +77,7 @@ export default function Chat() {
       });
 
       let run = await openai.beta.threads.runs.createAndPoll(thread.id, {
-        assistant_id: process.env.NEXT_PUBLIC_OPENAI_ASSISTANT_ID!,
+        assistant_id: assistantId,
       });
 
       if (run.status === "completed") {
@@ -106,6 +118,10 @@ export default function Chat() {
     setResponseMessages([]);
     setThread(null);
   };
+
+  if (!openai || !assistantId) {
+    return null;
+  }
 
   return (
     <div className="fixed bottom-6 z-40 w-full">
