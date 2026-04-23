@@ -1,0 +1,210 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+}
+
+model User {
+    id          String       @id @default(uuid())
+    username    String       @unique
+    email       String       @unique
+    password    String
+    firstName   String       @map("first_name")
+    lastName    String       @map("last_name")
+    birthdate   DateTime
+    profilePic  String       @default("https://placehold.co/200x200?text=Questie") @map("profile_pic")
+    role        String       @default("user")
+    stats       Stats?
+    enrolments  Enrolment[]
+    invoices    Invoice[]
+    progresses  Progress[]
+    assessments Assessment[]
+    createdAt   DateTime     @default(now()) @map("created_at")
+    updatedAt   DateTime     @updatedAt @map("updated_at")
+    deletedAt   DateTime?    @map("deleted_at")
+
+    @@map("users")
+}
+
+model Stats {
+    id        String   @id @default(uuid())
+    userId    String   @unique @map("user_id")
+    coins     Int      @default(0)
+    xp        Int      @default(0)
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@map("stats")
+}
+
+model Course {
+    id          String           @id @default(uuid())
+    title       String
+    slug        String           @unique
+    headline    String
+    description String
+    image       String           @default("https://placehold.co/1200x675?text=Questie")
+    bgImage     String           @default("https://placehold.co/1600x900?text=Questie") @map("bg_image")
+    assessment  Float            @default(0)
+    status      String           @default("pending")
+    isProduct   Boolean          @default(false) @map("is_product")
+    modules     Module[]
+    categories  CourseCategory[]
+    enrolments  Enrolment[]
+    assessments Assessment[]
+    createdAt   DateTime         @default(now()) @map("created_at")
+    updatedAt   DateTime         @updatedAt @map("updated_at")
+    deletedAt   DateTime?        @map("deleted_at")
+
+    @@map("courses")
+}
+
+model Category {
+    id        String           @id @default(uuid())
+    name      String
+    slug      String           @unique
+    image     String           @default("https://placehold.co/600x400?text=Categoria")
+    courses   CourseCategory[]
+    createdAt DateTime         @default(now()) @map("created_at")
+    updatedAt DateTime         @updatedAt @map("updated_at")
+    deletedAt DateTime?        @map("deleted_at")
+
+    @@map("categories")
+}
+
+model CourseCategory {
+    courseId   String   @map("course_id")
+    categoryId String   @map("category_id")
+    course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+    category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+    createdAt  DateTime @default(now()) @map("created_at")
+
+    @@id([courseId, categoryId])
+    @@map("course_categories")
+}
+
+model Module {
+    id          String    @id @default(uuid())
+    title       String
+    slug        String    @unique
+    image       String    @default("https://placehold.co/1200x675?text=Modulo")
+    description String
+    courseId    String    @map("course_id")
+    course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+    lessons     Lesson[]
+    createdAt   DateTime  @default(now()) @map("created_at")
+    updatedAt   DateTime  @updatedAt @map("updated_at")
+    deletedAt   DateTime? @map("deleted_at")
+
+    @@map("modules")
+}
+
+model Lesson {
+    id         String     @id @default(uuid())
+    title      String
+    slug       String     @unique
+    order      Int
+    xp         Int        @default(0)
+    coins      Int        @default(0)
+    status     String     @default("pending")
+    moduleId   String     @map("module_id")
+    module     Module     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+    contents   Content[]
+    progresses Progress[]
+    createdAt  DateTime   @default(now()) @map("created_at")
+    updatedAt  DateTime   @updatedAt @map("updated_at")
+    deletedAt  DateTime?  @map("deleted_at")
+
+    @@unique([moduleId, order])
+    @@map("lessons")
+}
+
+model Content {
+    id        String    @id @default(uuid())
+    lessonId  String    @map("lesson_id")
+    type      String
+    content   Json
+    lesson    Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime  @updatedAt @map("updated_at")
+    deletedAt DateTime? @map("deleted_at")
+
+    @@map("contents")
+}
+
+model Progress {
+    id        String   @id @default(uuid())
+    userId    String   @map("user_id")
+    lessonId  String   @map("lesson_id")
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now()) @map("created_at")
+
+    @@unique([userId, lessonId])
+    @@map("progress")
+}
+
+model Product {
+    id                    String    @id @default(uuid())
+    name                  String
+    order                 Int       @default(0)
+    data                  Json?
+    price                 Float
+    imgUrl                String    @default("https://placehold.co/1200x675?text=Producto") @map("img_url")
+    currency              String
+    description           String
+    polymorphicEntityType String?   @map("polymorphic_entity_type")
+    polymorphicEntityId   String?   @map("polymorphic_entity_id")
+    invoices              Invoice[]
+    createdAt             DateTime  @default(now()) @map("created_at")
+    updatedAt             DateTime  @updatedAt @map("updated_at")
+    deletedAt             DateTime? @map("deleted_at")
+
+    @@map("products")
+}
+
+model Invoice {
+    id        String    @id @default(uuid())
+    userId    String    @map("user_id")
+    total     Float
+    productId String    @map("product_id")
+    status    String    @default("paid")
+    product   Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
+    user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime  @updatedAt @map("updated_at")
+    deletedAt DateTime? @map("deleted_at")
+
+    @@map("invoices")
+}
+
+model Enrolment {
+    id         String    @id @default(uuid())
+    courseId   String    @map("course_id")
+    userId     String    @map("user_id")
+    progressId String?   @map("progress_id")
+    course     Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+    user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    createdAt  DateTime  @default(now()) @map("created_at")
+    updatedAt  DateTime  @updatedAt @map("updated_at")
+    deletedAt  DateTime? @map("deleted_at")
+
+    @@unique([courseId, userId])
+    @@map("enrolments")
+}
+
+model Assessment {
+    id        String   @id @default(uuid())
+    courseId  String   @map("course_id")
+    userId    String   @map("user_id")
+    score     Int
+    course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now()) @map("created_at")
+
+    @@unique([courseId, userId])
+    @@map("assessments")
+}

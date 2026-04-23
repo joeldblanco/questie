@@ -4,23 +4,28 @@ import { FaCoins } from "react-icons/fa6";
 import { IoIosPhonePortrait } from "react-icons/io";
 import { AiFillSafetyCertificate } from "react-icons/ai";
 import ColumnModule from "../../components/column-module";
-import { getCourseByIdDB, getCoursesDB } from "@/helpers/course.helpers";
+import {
+  getCourseByIdOrSlugForPage,
+  getCoursesForPage,
+} from "@/lib/server/read-models";
 import HeaderCourse from "@/app/components/course/header-course";
 import ModuleCourseCard from "@/app/components/course/module-course-card";
 import { ICourse, ILesson, IModule } from "@/app/types";
 import Slider from "@/app/components/slider";
 
+export const dynamic = "force-dynamic";
+
 const CurseReview = async ({ params }: { params: any }) => {
   const { slug } = params;
-  const courses: ICourse[] = await getCoursesDB();
-  const course: ICourse = await getCourseByIdDB(slug);
+  const courses: ICourse[] = await getCoursesForPage();
+  const course: ICourse = await getCourseByIdOrSlugForPage(slug);
 
   const totalCoins = course.modules.reduce((acc: number, module: IModule) => {
     const moduleCoins = module.lessons.reduce(
       (lessonAcc: number, lesson: ILesson) => {
         return lessonAcc + lesson.coins;
       },
-      0
+      0,
     );
     return acc + moduleCoins;
   }, 0);
@@ -48,7 +53,7 @@ const CurseReview = async ({ params }: { params: any }) => {
               <MdArticle className="w-10 h-10 text-purpleMain pr-2" />{" "}
               {course.modules.reduce(
                 (total, module) => total + module.lessons.length,
-                0
+                0,
               )}{" "}
               artículos
             </h3>

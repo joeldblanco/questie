@@ -1,17 +1,21 @@
-import { getCoursesDB } from "@/helpers/course.helpers";
+import {
+  getCategoriesForPage,
+  getCoursesForPage,
+} from "@/lib/server/read-models";
 import ColumnFilter from "../../components/column-filter";
 import { ICategory, ICourse } from "@/app/types";
 import Card from "@/app/components/card";
-import { getCategoriesDB } from "@/helpers/categories.helper";
 import ButtonFilter from "@/app/components/button-filter";
+
+export const dynamic = "force-dynamic";
 
 async function Categories({
   params,
 }: {
   params: { slug: string };
 }): Promise<JSX.Element> {
-  const courses: ICourse[] = await getCoursesDB();
-  const categoriesList: ICategory[] = await getCategoriesDB();
+  const courses: ICourse[] = await getCoursesForPage();
+  const categoriesList: ICategory[] = await getCategoriesForPage();
 
   const { slug } = params;
   const decodedURL = decodeURIComponent(slug);
@@ -33,9 +37,9 @@ async function Categories({
       categories.some(
         (filterCategory) =>
           normalizeString(category.name).toLowerCase() ===
-          normalizeString(filterCategory).toLowerCase()
-      )
-    )
+          normalizeString(filterCategory).toLowerCase(),
+      ),
+    ),
   );
 
   return (

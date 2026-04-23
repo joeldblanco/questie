@@ -1,7 +1,9 @@
 import ColumnModule from "@/app/components/column-module";
-import { getModuleById } from "@/helpers/module.helper";
+import { getModuleByIdOrSlugForPage } from "@/lib/server/read-models";
 import Link from "next/link";
 import styles from "./module.module.css";
+
+export const dynamic = "force-dynamic";
 
 const Module = async ({
   params,
@@ -9,8 +11,8 @@ const Module = async ({
   params: { slug: string };
 }): Promise<JSX.Element> => {
   const { slug } = params;
-  const moduleById = await getModuleById(slug);
-  const lessonInModule = moduleById?.lessons.map((lesson) => lesson);
+  const moduleById = await getModuleByIdOrSlugForPage(slug);
+  const lessonInModule = moduleById?.lessons.map((lesson: any) => lesson);
   const course = moduleById?.course.id;
 
   return (
@@ -49,7 +51,7 @@ const Module = async ({
                       <div key={contentIndex}>
                         <p className="text-sm mt-2">{content.title}</p>
                       </div>
-                    )
+                    ),
                   )}
               </div>
             ))

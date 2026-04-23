@@ -1,13 +1,17 @@
-import { getCoursesDB } from "@/helpers/course.helpers";
+import {
+  getCategoriesForPage,
+  getCoursesForPage,
+} from "@/lib/server/read-models";
 import ColumnFilter from "../components/column-filter";
 import Slider from "../components/slider/Slider";
 import { ICategory, ICourse } from "../types";
 import Card from "../components/card";
-import { getCategoriesDB } from "@/helpers/categories.helper";
+
+export const dynamic = "force-dynamic";
 
 async function Categories() {
-  const courses = await getCoursesDB();
-  const categoriesList: ICategory[] = await getCategoriesDB();
+  const courses = await getCoursesForPage();
+  const categoriesList: ICategory[] = await getCategoriesForPage();
 
   return (
     <div className="flex mx-[11.5rem] justify-center ">

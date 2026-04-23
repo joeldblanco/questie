@@ -1,11 +1,13 @@
-import { getCoursesDB } from "@/helpers/course.helpers";
+import { getCoursesForPage } from "@/lib/server/read-models";
 import Carousel from "./components/carousel";
 import CategoriesCards from "./components/categories/categories-cards/CategoriesCards";
 import Slider from "./components/slider";
 import LandingLogin from "./components/landing-login";
 
+export const dynamic = "force-dynamic";
+
 const Home: React.FC = async (): Promise<JSX.Element> => {
-  const courses = await getCoursesDB();
+  const courses = await getCoursesForPage();
 
   return (
     <div className="flex flex-col justify-center items-center mx-[2rem] md:mx-[5rem] lg:mx-[11.5rem]">

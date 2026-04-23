@@ -1,10 +1,12 @@
-import { getAllProducts } from "@/helpers/products.helper";
+import { getProductsForPage } from "@/lib/server/read-models";
 import Card from "../components/card";
 import { IProduct } from "../types";
 
+export const dynamic = "force-dynamic";
+
 const Shop = async () => {
   //GET ALL PRODUCTS FROM API
-  const products = await getAllProducts();
+  const products = await getProductsForPage("standalone");
 
   //SORT PRODUCTS BY ORDER
   products.sort((a: IProduct, b: IProduct) => a.order - b.order);
